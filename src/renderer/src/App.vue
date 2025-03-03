@@ -2,32 +2,58 @@
 import { ref, computed, nextTick } from 'vue'
 import VRViewer from './components/VRViewer.vue'
 console.log(window.getAssetPath)
-const images = [
+
+const currentMaterial = ref(null)
+const selectedItem = ref(null)
+
+const chooseMaterial = (id) => {
+  currentMaterial.value = images.value.find((image) => image.id === id)
+  console.log('ccc', currentMaterial.value)
+  selectedItem.value = null // 切換時重置已選擇的選項
+}
+const chooseItem = (item) => {
+  selectedItem.value = item.name
+  selectedOptions.value[currentMaterial.value.name] = item.name
+}
+
+const images = ref([
   {
+    id: '001',
     name: '客廳地板',
-    chooseImage: '/material/001_floor.png',
+    // chooseImage: '/material/001_floor.png',
+    chooseImage: window.assetPath
+      ? window.assetPath.getAssetPath('material', '001_floor.png')
+      : '/material/001_floor.png',
     items: [
-      { name: '磚地', thumbnail: '', descPath: '', vrPath: '', imgPath: '' },
-      { name: '木地', thumbnail: '', descPath: '', vrPath: '', imgPath: '' }
+      { name: '木地', thumbnail: '', descPath: '', vrPath: '', imgPath: '' },
+      { name: '磚地', thumbnail: '', descPath: '', vrPath: '', imgPath: '' }
     ]
   },
   {
+    id: '002',
     name: '配套廚具',
-    chooseImage: '/material/002_kitchen.png',
+    // chooseImage: '/material/002_kitchen.png',
+    chooseImage: window.assetPath
+      ? window.assetPath.getAssetPath('material', '002_kitcken.png')
+      : '/material/002_kitcken.png',
     items: [
-      { name: 'sa', thumbnail: '', descPath: '', vrPath: '', imgPath: '' },
-      { name: 'bo', thumbnail: '', descPath: '', vrPath: '', imgPath: '' }
+      { name: 'Bo', thumbnail: '', descPath: '', vrPath: '', imgPath: '' },
+      { name: 'Sa', thumbnail: '', descPath: '', vrPath: '', imgPath: '' }
     ]
   },
   {
+    id: '003',
     name: '衛浴設備',
-    chooseImage: '/material/003_bathroom.png',
+    // chooseImage: '/material/003_bathroom.png',
+    chooseImage: window.assetPath
+      ? window.assetPath.getAssetPath('material', '003_bathroom.png')
+      : '/material/003_bathroom.png',
     items: [
-      { name: 'full', thumbnail: '', descPath: '', vrPath: '', imgPath: '' },
-      { name: 'single', thumbnail: '', descPath: '', vrPath: '', imgPath: '' }
+      { name: '自動馬桶', thumbnail: '', descPath: '', vrPath: '', imgPath: '' },
+      { name: '馬桶', thumbnail: '', descPath: '', vrPath: '', imgPath: '' }
     ]
   }
-]
+])
 // const stickerSrc = ref(
 //   window.assetPath
 //     ? window.assetPath.getAssetPath('game', 'hydrogen_sticker-black.svg')
@@ -49,7 +75,6 @@ const selectedOptions = ref({
   kitchen: 'Bo',
   bathroom: '自動馬桶'
 })
-
 const scenes = ['客廳', '餐廳']
 const floors = ['木地', '磚地']
 const kitchens = ['Bo', 'Sa']
@@ -64,7 +89,8 @@ const generateImageMap = (isVR = false) => {
         bathrooms.forEach((bathroom) => {
           const key = `${scene}_${floor}_${kitchen}_${bathroom}`
           const folder = scene === '客廳' ? 'living' : 'dining'
-          const suffix = isVR ? '/vr' : ''
+          const suffix = isVR ? 'vr' : ''
+          const extension = isVR ? 'jpg' : 'png' // ✅ VR 圖片為 `.jpg`，普通圖片為 `.png`
 
           // 計算對應的圖片編號
           const fileIndex = (() => {
@@ -81,8 +107,8 @@ const generateImageMap = (isVR = false) => {
 
           // 生成圖片路徑
           imageMap[key] = window.assetPath
-            ? window.assetPath.getAssetPath(folder, `${suffix}/${fileIndex}.png`)
-            : `/${folder}${suffix}/${fileIndex}.png`
+            ? window.assetPath.getAssetPath(folder, `${suffix}${fileIndex}.${extension}`)
+            : `/${folder}/${suffix}${fileIndex}.${extension}`
         })
       })
     })
@@ -91,9 +117,9 @@ const generateImageMap = (isVR = false) => {
   return imageMap
 }
 
-// **生成圖片映射表**
-const normalImageMap = generateImageMap(false) // 普通模式
-const vrImageMap = generateImageMap(true) // VR 模式
+// **動態生成圖片映射表**
+const normalImageMap = generateImageMap(false) // ✅ 普通模式 (PNG)
+const vrImageMap = generateImageMap(true) // ✅ VR 模式 (JPG)
 
 console.log('普通模式圖片:', normalImageMap)
 console.log('VR 模式圖片:', vrImageMap)
@@ -122,27 +148,60 @@ const currentImage = computed(() => {
   }
 })
 
-const changeImage = async (image) => {
-  navbarImage.value = '' // 先設為空值，強制觸發 reactivity
-  await nextTick() // 等待 DOM 更新
-  navbarImage.value = image
-  console.log('navbarImage 更新:', navbarImage.value)
-}
-
 // **切換 VR 模式**
 const toggleVRMode = () => {
   isVRMode.value = !isVRMode.value
+}
+const isDescriptionOpen = ref(false)
+const openDescription = () => {
+  console.log('openDescription')
+  isDescriptionOpen.value = true
+}
+
+// 處理選項點擊
+const handleMaterialClick = (itemIndex) => {
+  if (!currentMaterial.value) return
+
+  const item = currentMaterial.value.items[itemIndex]
+  if (!item) return
+
+  // 根據當前材質類型更新相應的選項
+  if (currentMaterial.value.id === '001') {
+    // 客廳地板
+    selectedOptions.value.floor = item.name
+  } else if (currentMaterial.value.id === '002') {
+    // 配套廚具
+    selectedOptions.value.kitchen = item.name
+  } else if (currentMaterial.value.id === '003') {
+    // 衛浴設備
+    selectedOptions.value.bathroom = item.name
+  }
+  console.log('selectedOptions', selectedOptions.value)
+  // 可選：更新已選擇的選項
+  selectedItem.value = item.name
 }
 </script>
 <template lang="pug">
 div.container
   nav
     ul
-      li(v-for="image in images" :key="image.name")
-        a(:href="image.path") {{ image.name }}
+      li(v-for="image in images" :key="image.name" @click="chooseMaterial(image.id)") {{ image.name }}
   .currentimage__container
-    img(:src="currentImage" alt="current image")
+    img(:src="currentImage" alt="current image" v-show="!isVRMode")
     .select__scene(@click="changeScene") {{selectedScene}}
+    .vr__mode(@click="toggleVRMode") VR Mode
+    .vr__container(v-show="isVRMode")
+      VRViewer(:image="currentImage")
+
+    .material__container(v-if="currentMaterial")
+      img(:src="currentMaterial.chooseImage" alt="current material")
+      .choose__item1(@click="handleMaterialClick(0)")
+      .choose__item2(@click="handleMaterialClick(1)")
+      .description(@click="openDescription") 
+      .desc__img 
+        img(:src="currentMaterial.items[0].descPath" alt="desc image")
+      .close
+ 
 </template>
 
 <style lang="sass" scoped>
@@ -158,19 +217,22 @@ div.container
     justify-content: center
     align-items: center
     ul
+      margin: auto
       list-style-type: none
       width: 100%
       padding: 0
       display: flex
       flex-direction: column
       margin: auto
+      color: white
       li
-        padding: 10px
-        a
-          color: white
-          text-decoration: none
-          &:hover
-            text-decoration: underline
+        padding: 15px
+        margin: auto
+        cursor: pointer
+        font-size: 24px
+        &:hover
+          color: #7B6D4A
+          transition: color 0.3s
 
 .text-container
   position: relative
@@ -231,4 +293,49 @@ div.container
 
   &:hover
     background-color: rgba(0, 0, 0, 0.7)
+.material__container
+  position: absolute
+  top: 0
+  left: 0
+  z-index: 2
+  img
+    width: 100%
+    height: 100%
+    object-fit: cover
+  .description
+    position: absolute
+    width: 200px
+    height: 50px
+    border: red 1px solid
+    top: 71%
+    left: 44%
+  .choose__item1,
+  .choose__item2
+    position: absolute
+    width: 355px
+    height: 355px
+    top: 32%
+    left: 25%
+    background-color: rgba(0, 0, 0, 0.5)
+    cursor: pointer
+    transition: background-color 0.3s
+
+  .choose__item2
+    left: 53.5%
+.vr__mode
+  position: absolute
+  top: 10%
+  right: 10%
+  transform: translate(50%, -50%)
+  width: 100px
+  height: 50px
+  border: 1px solid white
+  z-index: 1
+.vr__container
+  position: absolute
+  top: 0
+  left: 0
+  width: 100%
+  height: 100%
+  // z-index: 2
 </style>
