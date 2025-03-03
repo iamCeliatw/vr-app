@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, nextTick } from 'vue'
 import VRViewer from './components/VRViewer.vue'
-
+console.log(window.getAssetPath)
 const images = [
   {
     name: '客廳地板',
@@ -28,7 +28,11 @@ const images = [
     ]
   }
 ]
-
+// const stickerSrc = ref(
+//   window.assetPath
+//     ? window.assetPath.getAssetPath('game', 'hydrogen_sticker-black.svg')
+//     : '/game/hydrogen_sticker-black.svg'
+// )
 // **使用者選擇的場景**
 const selectedScene = ref('客廳') // 預設顯示客廳
 
@@ -41,7 +45,9 @@ const selectedOptions = ref({
 
 // **普通視圖的圖片對照表**
 const normalImageMap = {
-  客廳_木地_Bo_自動馬桶: '/living/0.png',
+  客廳_木地_Bo_自動馬桶: window.assetPath
+    ? window.assetPath.getAssetPath('living', '0.png')
+    : '/living/0.png',
   客廳_磚地_Bo_自動馬桶: '/living/1.png',
   客廳_磚地_Sa_自動馬桶: '/living/2.png',
   客廳_木地_Sa_自動馬桶: '/living/3.png',
@@ -94,7 +100,10 @@ const currentImage = computed(() => {
     )
   } else {
     return (
-      normalImageMap[key] || (selectedScene.value === '客廳' ? '/living/0.png' : '/dining/0.png')
+      normalImageMap[key] ||
+      (selectedScene.value === '客廳'
+        ? window.assetPath.getAssetPath('living', '0.png')
+        : window.assetPath.getAssetPath('dining', '0.png'))
     )
   }
 })
@@ -114,12 +123,9 @@ const toggleVRMode = () => {
 <template lang="pug">
 div.container
   nav
-    img(:src="`/sidebar/${navbarImage}.png`" alt="logo")  
-    .item_1.navitem(@click="changeImage('001')")
-    .item_2.navitem(@click="changeImage('002')")
-    .item_3.navitem(@click="changeImage('003')")
-    .item_4.navitem(@click="changeImage('004')")
-
+    ul
+      li(v-for="image in images" :key="image.name")
+        a(:href="image.path") {{ image.name }}
   .currentimage__container
     img(:src="currentImage" alt="current image")
 </template>
@@ -130,33 +136,26 @@ div.container
   height: 1080px
   display: flex
   nav
-    width: 200px
+    width: 300px
     height: 100%
-    // background-color: #9C8E69
+    background-color: #9C8E69
     display: flex
     justify-content: center
     align-items: center
-    position: relative
-    img
-      position: absolute
-      top: 0
+    ul
+      list-style-type: none
       width: 100%
-      height: 100vh
-    .navitem
-      width: 100px
-      height: 30px
-      position: absolute
-      top: 415px
-      transform: translateY(-50%)
-      border: 1px solid white
-    .navitem .item_1
-      top: 415px
-    .item_2
-      top: 480px
-    .item_3
-      top: 540px
-    .item_4
-      top: 600px
+      padding: 0
+      display: flex
+      flex-direction: column
+      margin: auto
+      li
+        padding: 10px
+        a
+          color: white
+          text-decoration: none
+          &:hover
+            text-decoration: underline
 
 .text-container
   position: relative
