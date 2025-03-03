@@ -35,7 +35,14 @@ const images = [
 // )
 // **使用者選擇的場景**
 const selectedScene = ref('客廳') // 預設顯示客廳
-
+const changeScene = () => {
+  if (selectedScene.value === '客廳') {
+    selectedScene.value = '餐廳'
+  } else {
+    selectedScene.value = '客廳'
+  }
+  // selectedScene.value = '客廳' ? '餐廳' : '客廳'
+}
 // **使用者的選擇（初始值）**
 const selectedOptions = ref({
   floor: '木地', // 預設值
@@ -43,49 +50,53 @@ const selectedOptions = ref({
   bathroom: '自動馬桶'
 })
 
-// **普通視圖的圖片對照表**
-const normalImageMap = {
-  客廳_木地_Bo_自動馬桶: window.assetPath
-    ? window.assetPath.getAssetPath('living', '0.png')
-    : '/living/0.png',
-  客廳_磚地_Bo_自動馬桶: '/living/1.png',
-  客廳_磚地_Sa_自動馬桶: '/living/2.png',
-  客廳_木地_Sa_自動馬桶: '/living/3.png',
-  客廳_木地_Bo_馬桶: '/living/7.png',
-  客廳_磚地_Bo_馬桶: '/living/6.png',
-  客廳_磚地_Sa_馬桶: '/living/5.png',
-  客廳_木地_Sa_馬桶: '/living/4.png',
+const scenes = ['客廳', '餐廳']
+const floors = ['木地', '磚地']
+const kitchens = ['Bo', 'Sa']
+const bathrooms = ['自動馬桶', '馬桶']
 
-  餐廳_木地_Bo_自動馬桶: '/dining/0.png',
-  餐廳_磚地_Bo_自動馬桶: '/dining/1.png',
-  餐廳_磚地_Sa_自動馬桶: '/dining/2.png',
-  餐廳_木地_Sa_自動馬桶: '/dining/3.png',
-  餐廳_木地_Bo_馬桶: '/dining/7.png',
-  餐廳_磚地_Bo_馬桶: '/dining/6.png',
-  餐廳_磚地_Sa_馬桶: '/dining/5.png',
-  餐廳_木地_Sa_馬桶: '/dining/4.png'
+const generateImageMap = (isVR = false) => {
+  const imageMap = {}
+
+  scenes.forEach((scene) => {
+    floors.forEach((floor) => {
+      kitchens.forEach((kitchen) => {
+        bathrooms.forEach((bathroom) => {
+          const key = `${scene}_${floor}_${kitchen}_${bathroom}`
+          const folder = scene === '客廳' ? 'living' : 'dining'
+          const suffix = isVR ? '/vr' : ''
+
+          // 計算對應的圖片編號
+          const fileIndex = (() => {
+            if (floor === '木地' && kitchen === 'Bo' && bathroom === '自動馬桶') return '0'
+            if (floor === '磚地' && kitchen === 'Bo' && bathroom === '自動馬桶') return '1'
+            if (floor === '磚地' && kitchen === 'Sa' && bathroom === '自動馬桶') return '2'
+            if (floor === '木地' && kitchen === 'Sa' && bathroom === '自動馬桶') return '3'
+            if (floor === '木地' && kitchen === 'Bo' && bathroom === '馬桶') return '7'
+            if (floor === '磚地' && kitchen === 'Bo' && bathroom === '馬桶') return '6'
+            if (floor === '磚地' && kitchen === 'Sa' && bathroom === '馬桶') return '5'
+            if (floor === '木地' && kitchen === 'Sa' && bathroom === '馬桶') return '4'
+            return 'default'
+          })()
+
+          // 生成圖片路徑
+          imageMap[key] = window.assetPath
+            ? window.assetPath.getAssetPath(folder, `${suffix}/${fileIndex}.png`)
+            : `/${folder}${suffix}/${fileIndex}.png`
+        })
+      })
+    })
+  })
+
+  return imageMap
 }
 
-// **VR 視圖的圖片對照表**
-const vrImageMap = {
-  客廳_木地_Bo_自動馬桶: '/living/vr/0.png',
-  客廳_磚地_Bo_自動馬桶: '/living/vr/1.png',
-  客廳_磚地_Sa_自動馬桶: '/living/vr/2.png',
-  客廳_木地_Sa_自動馬桶: '/living/vr/3.png',
-  客廳_木地_Bo_馬桶: '/living/vr/7.png',
-  客廳_磚地_Bo_馬桶: '/living/vr/6.png',
-  客廳_磚地_Sa_馬桶: '/living/vr/5.png',
-  客廳_木地_Sa_馬桶: '/living/vr/4.png',
+// **生成圖片映射表**
+const normalImageMap = generateImageMap(false) // 普通模式
+const vrImageMap = generateImageMap(true) // VR 模式
 
-  餐廳_木地_Bo_自動馬桶: '/dining/vr/0.png',
-  餐廳_磚地_Bo_自動馬桶: '/dining/vr/1.png',
-  餐廳_磚地_Sa_自動馬桶: '/dining/vr/2.png',
-  餐廳_木地_Sa_自動馬桶: '/dining/vr/3.png',
-  餐廳_木地_Bo_馬桶: '/dining/vr/7.png',
-  餐廳_磚地_Bo_馬桶: '/dining/vr/6.png',
-  餐廳_磚地_Sa_馬桶: '/dining/vr/5.png',
-  餐廳_木地_Sa_馬桶: '/dining/vr/4.png'
-}
+console.log('普通模式圖片:', normalImageMap)
+console.log('VR 模式圖片:', vrImageMap)
 
 // **是否為 VR 模式**
 const isVRMode = ref(false)
@@ -96,7 +107,10 @@ const currentImage = computed(() => {
 
   if (isVRMode.value) {
     return (
-      vrImageMap[key] || (selectedScene.value === '客廳' ? '/living/vr/0.jpg' : '/dining/vr/0.jpg')
+      vrImageMap[key] ||
+      (selectedScene.value === '客廳'
+        ? window.assetPath.getAssetPath('living', 'vr0.png')
+        : window.assetPath.getAssetPath('dining', 'vr0.png'))
     )
   } else {
     return (
@@ -128,6 +142,7 @@ div.container
         a(:href="image.path") {{ image.name }}
   .currentimage__container
     img(:src="currentImage" alt="current image")
+    .select__scene(@click="changeScene") {{selectedScene}}
 </template>
 
 <style lang="sass" scoped>
@@ -191,8 +206,29 @@ div.container
 .currentimage__container
   width: 100%
   height: 100%
+  position: relative
   img
     width: 100%
     height: 100%
     object-fit: cover
+.select__scene
+  position: absolute
+  top: 10%
+  left: 50%
+  transform: translate(-50%, -50%)
+  width: 100px
+  height: 50px
+  background-color: rgba(0, 0, 0, 0.5)
+  display: flex
+  justify-content: center
+  align-items: center
+  font-size: 48px
+  color: white
+  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5)
+  z-index: 1
+  cursor: pointer
+  transition: background-color 0.3s
+
+  &:hover
+    background-color: rgba(0, 0, 0, 0.7)
 </style>
