@@ -249,7 +249,7 @@ function animate() {
   height: 100vh;
   position: relative;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.5s ease-in-out;
 }
 
 .vr-container.active {
