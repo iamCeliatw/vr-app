@@ -1,15 +1,16 @@
 <template lang="pug">
 div.container
-  video(
-      ref="introVideo"
-      src="/video.mp4"
-      autoplay
-      playsinline
-      controls
-      @ended="handleVideoEnd"
-      :class="{ fadeOut: !isVideoPlaying }"
-    )
-  div.main-content(v-if="!isVideoPlaying")
+  //- video(
+  //-     ref="introVideo"
+  //-     src="/video.mp4"
+  //-     autoplay
+  //-     playsinline
+  //-     controls
+  //-     @ended="handleVideoEnd"
+  //-     :class="{ fadeOut: !isVideoPlaying }"
+  //-   )
+  //- div.main-content(v-if="!isVideoPlaying")
+  div.main-content
     nav
       ul
         li(v-for="image in images" :key="image.name" @click="chooseMaterial(image.id)" :class="{focus: currentMaterial && currentMaterial.id === image.id}") {{ image.name }}
