@@ -1,37 +1,42 @@
 <template lang="pug">
 div.container
-  //- video(
-  //-     ref="introVideo"
-  //-     src="/video.mp4"
-  //-     autoplay
-  //-     playsinline
-  //-     controls
-  //-     @ended="handleVideoEnd"
-  //-     :class="{ fadeOut: !isVideoPlaying }"
-  //-   )
-  //- div.main-content(v-if="!isVideoPlaying")
-  div.main-content
+  video(
+      ref="introVideo"
+      src="/intro.mp4"
+      autoplay
+      playsinline
+      @ended="handleVideoEnd"
+      :class="{ fadeOut: !isVideoPlaying }"
+    )
+  div.main-content(v-if="!isVideoPlaying")
     nav
       ul
         li(v-for="image in images" :key="image.name" @click="chooseMaterial(image.id)" :class="{focus: currentMaterial && currentMaterial.id === image.id}") {{ image.name }}
     .currentimage__container
-      .img__container(v-show="!isVRMode" :class="{ fadeOut: isFading, fadeIn: !isFading }")
-        img(:src="currentImage" alt="current image" @load="handleImageLoad")
-      .select__scene(@click="changeScene" :disabled="isInteractionDisabled")  {{selectedScene}}
-      .vr__mode(@click="toggleVRMode" :disabled="isInteractionDisabled") {{isVRMode ? '3D' : 'VR'}}
-      .vr__container(v-show="showVRViewer" :class="{ fadeOut: isVRFading && !isVRMode, fadeIn: isVRFading && isVRMode }")
-        VRViewer(:image="currentImage")
+      .bg__container 
+        img(src="/bg.png" alt="background")
+      .scene__container
+        .img__container(v-show="!isVRMode" :class="{ fadeOut: isFading, fadeIn: !isFading }")
+          img(:src="currentImage" alt="current image" @load="handleImageLoad")
+        .select__scene(@click="changeScene" :disabled="isInteractionDisabled")  
+          img(:src="currentSceneImage" alt="switch")
+        .vr__mode(@click="toggleVRMode" :disabled="isInteractionDisabled") {{isVRMode ? '3D' : 'VR'}}
+        .vr__container(v-show="showVRViewer" :class="{ fadeOut: isVRFading && !isVRMode, fadeIn: isVRFading && isVRMode }")
+          VRViewer(:image="currentImage")
 
-      .material__container(v-if="currentMaterial")
-        img(:src="currentMaterial.chooseImage" alt="current material")
-        .choose__item1(@click="handleMaterialClick(0)")
-        .choose__item2(@click="handleMaterialClick(1)")
-        .description(@click="openDescription") 
-        .desc__img(v-show="isDescriptionOpen")
-          img(:src="materialDescImage" alt="desc image")
-          .desc__close 
-            .close(@click="isDescriptionOpen = false") {{"close"}}
-        .close(@click="currentMaterial = null") {{"close"}}
+        .material__container(v-if="currentMaterial")
+          img(:src="currentMaterial.chooseImage" alt="current material")
+          .choose__item1(@click="handleMaterialClick(0)")
+          .choose__item2(@click="handleMaterialClick(1)")
+          .description(@click="openDescription") 
+        
+          .close(@click="currentMaterial = null") 
+            img(src="/cross.png" alt="close")
+      .desc__img(v-show="isDescriptionOpen")
+        img(:src="materialDescImage" alt="desc image")
+        .desc__close 
+          .close(@click="isDescriptionOpen = false")
+            img(src="/cross.png" alt="close")
 </template>
 <script setup>
 import { ref, computed, watch } from 'vue'
@@ -146,6 +151,11 @@ const images = ref([
 // )
 // **使用者選擇的場景**
 const selectedScene = ref('客廳') // 預設顯示客廳
+const currentSceneImage = computed(() => {
+  const scene = selectedScene.value === '客廳' ? 'living' : 'dining'
+  console.log('scene', scene)
+  return window.assetPath ? window.assetPath.getAssetPath('', `${scene}.png`) : `/${scene}.png`
+})
 const changeScene = () => {
   if (selectedScene.value === '客廳') {
     selectedScene.value = '餐廳'
@@ -344,7 +354,9 @@ video.fadeOut
   transition: opacity 1s ease-in
   animation: fadeIn 1s ease-in forwards  // 讓首頁淡入
   width: 1920px
-  height: 1080px
+  // height: calc(1080px - 60px) // 減去 nav 的高度
+  // margin: 60px auto 0
+
   display: flex
 @keyframes fadeIn
   from
@@ -371,7 +383,7 @@ video.fadeOut
   nav
     width: 300px
     height: 100%
-    background-color: #9C8E69
+    background: linear-gradient(0deg, #B9A670 20%, #D9CAAA 100%)
     display: flex
     justify-content: center
     align-items: center
@@ -418,7 +430,11 @@ video.fadeOut
 .currentimage__container
   width: 100%
   height: 100%
+  // margin: auto
+  display: flex
+
   position: relative
+
   img
     width: 100%
     height: 100%
@@ -428,21 +444,13 @@ video.fadeOut
   top: 10%
   left: 50%
   transform: translate(-50%, -50%)
-  width: 100px
-  height: 50px
-  background-color: rgba(0, 0, 0, 0.5)
-  display: flex
-  justify-content: center
-  align-items: center
-  font-size: 48px
-  color: white
-  text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5)
   z-index: 1
   cursor: pointer
-  transition: background-color 0.3s
-
-  &:hover
-    background-color: rgba(0, 0, 0, 0.7)
+.scene__container
+  width: 100%
+  height: 90%
+  position: relative
+  margin: auto
 .material__container
   position: absolute
   top: 0
@@ -458,9 +466,10 @@ video.fadeOut
     position: absolute
     width: 200px
     height: 50px
-    // border: red 1px solid
+    cursor: pointer
     top: 71%
     left: 44%
+
   .choose__item1,
   .choose__item2
     position: absolute
@@ -478,19 +487,18 @@ video.fadeOut
     position: absolute
     top: 10%
     right: 5%
-    width: 50px
-    height: 50px
-    background-color: rgba(0, 0, 0, 0.5)
+    width: 30px
+    height: 30px
     color: white
     font-size: 24px
     display: flex
     justify-content: center
     align-items: center
     cursor: pointer
-    transition: background-color 0.3s
+    img
+      width: 100%
+      height: 100%
 
-    &:hover
-      background-color: rgba(0, 0, 0, 0.7)
 .vr__mode
   position: absolute
   top: 10%
@@ -501,6 +509,7 @@ video.fadeOut
   border-radius: 5px
   color: #fff
   text-align: center
+  cursor: pointer
   line-height: 30px
   font-size: 24px
   // border: 1px solid white
@@ -525,11 +534,37 @@ video.fadeOut
   img
     width: 100%
     height: 100%
-    object-fit: contain
+    object-fit: cover
     object-position: center
 
 .img__container
   width: 100%
   height: 100%
   position: relative
+
+
+.bg__container
+  position: absolute
+  top: 0
+  left: 0
+  width: auto
+  img
+    height: 100vh
+    object-position: right
+
+.desc__close
+  position: absolute
+  top: 10%
+  right: 5%
+  width: 30px
+  height: 30px
+  color: white
+  font-size: 24px
+  display: flex
+  justify-content: center
+  align-items: center
+  cursor: pointer
+  img
+    width: 100%
+    height: 100%
 </style>

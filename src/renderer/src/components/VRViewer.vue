@@ -15,6 +15,10 @@ const container = ref(null)
 let lon = 0,
   phi = 0,
   theta = 0
+
+let velocity = 0 // 旋轉速度
+let friction = 0.95 // 摩擦力（控制減速程度）
+
 let isDragging = false,
   lastX
 let animationFrameId = null
@@ -90,6 +94,7 @@ function updateTexture(imageUrl) {
     container.value.classList.add('loading')
   }
   console.log('imageurl', imageUrl)
+  lon = props.image.includes('dining') ? -360 : 180
   // 根據是否打包來確保正確的路徑
   const newImageUrl = window.assetPath
     ? window.assetPath.getAssetPath(getFolderName(imageUrl), getFileName(imageUrl))
@@ -102,7 +107,9 @@ function updateTexture(imageUrl) {
     newImageUrl,
     (texture) => {
       // 设置纹理映射方式
+      texture.encoding = THREE.sRGBEncoding // 確保顏色正確
       texture.mapping = THREE.EquirectangularReflectionMapping
+      texture.colorSpace = 'srgb' // 降低亮度
 
       // 更新球体材质的贴图
       if (sphereMaterial) {
@@ -141,7 +148,8 @@ function initThreeJS() {
   renderer.setSize(window.innerWidth, window.innerHeight)
   renderer.setPixelRatio(window.devicePixelRatio)
   container.value.appendChild(renderer.domElement)
-
+  const light = new THREE.AmbientLight(0xffffff, 0.5) // 50% 強度的環境光
+  scene.add(light)
   // 创建一个默认的纯色纹理，作为加载前的占位符
   const defaultTexture = new THREE.TextureLoader().load(props.image, () => {
     // 纹理加载完成后，移除加载指示器
@@ -192,10 +200,10 @@ function onMouseMove(event) {
 
   let deltaX = event.clientX - lastX
 
-  lon -= deltaX * 0.2
+  velocity = deltaX * 0.2 // 計算速度
+  lon -= velocity
 
   lastX = event.clientX
-
   // 确保即使未运行动画循环，也能看到移动效果
   if (!animationFrameId) {
     render()
@@ -204,6 +212,20 @@ function onMouseMove(event) {
 
 function onMouseUp() {
   isDragging = false
+  applyInertia() // 啟動慣性緩衝
+}
+
+function applyInertia() {
+  if (Math.abs(velocity) < 0.01) {
+    velocity = 0 // 速度小到一定程度後停止
+    return
+  }
+
+  velocity *= friction // 逐步減小速度
+  lon -= velocity // 持續影響視角
+
+  render()
+  requestAnimationFrame(applyInertia) // 遞迴執行直到完全停止
 }
 
 function onWindowResize() {
