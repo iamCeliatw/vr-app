@@ -268,10 +268,11 @@ function animate() {
 <style scoped>
 .vr-container {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   position: relative;
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
+  overflow: hidden;
 }
 
 .vr-container.active {

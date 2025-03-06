@@ -1,17 +1,23 @@
 <template lang="pug">
 div.container
-  video(
-      ref="introVideo"
-      src="/intro.mp4"
-      autoplay
-      playsinline
-      @ended="handleVideoEnd"
-      :class="{ fadeOut: !isVideoPlaying }"
-    )
-  div.main-content(v-if="!isVideoPlaying")
-    nav
-      ul
-        li(v-for="image in images" :key="image.name" @click="chooseMaterial(image.id)" :class="{focus: currentMaterial && currentMaterial.id === image.id}") {{ image.name }}
+  //- video(
+  //-     ref="introVideo"
+  //-     src="/intro.mp4"
+  //-     autoplay
+  //-     playsinline
+  //-     @ended="handleVideoEnd"
+  //-     :class="{ fadeOut: !isVideoPlaying }"
+  //-   )
+  //- div.main-content(v-if="!isVideoPlaying")
+  div.main-content
+    div.navbar__container
+      img(:src="sidebarImage" alt="navbar")
+      .nav__item1.nav__item(@click="chooseMaterial('001')")
+      .nav__item2.nav__item(@click="chooseMaterial('002')")
+      .nav__item3.nav__item(@click="chooseMaterial('003')")
+      .nav__item4.nav__item(@click="isAllChooseMode = true")
+      //-   li(v-for="image in images" :key="image.name" @click="chooseMaterial(image.id)" :class="{focus: currentMaterial && currentMaterial.id === image.id}") {{ image.name }}
+
     .currentimage__container
       .bg__container 
         img(src="/bg.png" alt="background")
@@ -29,13 +35,18 @@ div.container
           .choose__item1(@click="handleMaterialClick(0)")
           .choose__item2(@click="handleMaterialClick(1)")
           .description(@click="openDescription") 
-        
-          .close(@click="currentMaterial = null") 
-            img(src="/cross.png" alt="close")
+          .option__image(:class="{pos_1: selectedItemIndex[currentMaterial.type] === 0, pos_2: selectedItemIndex[currentMaterial.type] === 1}")
+            img(src="/option_frame.png" alt="option frame")
+      
       .desc__img(v-show="isDescriptionOpen")
         img(:src="materialDescImage" alt="desc image")
         .desc__close 
           .close(@click="isDescriptionOpen = false")
+            img(src="/cross.png" alt="close")
+      .allchoose__container(v-show="isAllChooseMode")
+        img(:src="allChooseImage" alt="all choose image")
+        .desc__close 
+          .close(@click="isAllChooseMode = false")
             img(src="/cross.png" alt="close")
 </template>
 <script setup>
@@ -46,6 +57,14 @@ console.log(window.getAssetPath)
 const isVideoPlaying = ref(true)
 const isFading = ref(false)
 const isVRFading = ref(false)
+const sidebarImageId = ref('000')
+const isAllChooseMode = ref(false)
+const sidebarImage = computed(() => {
+  return window.assetPath
+    ? window.assetPath.getAssetPath('sidebar', `${sidebarImageId.value}.png`)
+    : `sidebar/${sidebarImageId.value}.png`
+})
+
 // **影片播放完畢，淡出並顯示首頁**
 const handleVideoEnd = () => {
   isVideoPlaying.value = false
@@ -64,6 +83,7 @@ const openDescription = () => {
   isDescriptionOpen.value = true
 }
 const chooseMaterial = (id) => {
+  sidebarImageId.value = id
   currentMaterial.value = images.value.find((image) => image.id === id)
   console.log('ccc', currentMaterial.value)
   selectedItem.value = null // 切換時重置已選擇的選項
@@ -144,11 +164,7 @@ const images = ref([
     ]
   }
 ])
-// const stickerSrc = ref(
-//   window.assetPath
-//     ? window.assetPath.getAssetPath('game', 'hydrogen_sticker-black.svg')
-//     : '/game/hydrogen_sticker-black.svg'
-// )
+
 // **使用者選擇的場景**
 const selectedScene = ref('客廳') // 預設顯示客廳
 const currentSceneImage = computed(() => {
@@ -221,7 +237,7 @@ console.log('VR 模式圖片:', vrImageMap)
 
 // **是否為 VR 模式**
 const isVRMode = ref(false)
-const navbarImage = ref('001')
+
 // **計算當前應該顯示的圖片**
 const currentImage = computed(() => {
   const key = `${selectedScene.value}_${selectedOptions.value.floor}_${selectedOptions.value.kitchen}_${selectedOptions.value.bathroom}`
@@ -279,6 +295,10 @@ const handleMaterialClick = (itemIndex) => {
   console.log('selectedOptions', selectedOptions.value)
   // 可選：更新已選擇的選項
   selectedItem.value = item.name
+
+  //初始化
+  currentMaterial.value = null
+  sidebarImageId.value = '000'
 }
 
 const isInteractionDisabled = ref(false)
@@ -331,6 +351,24 @@ watch(isVRMode, (newVal) => {
     isInteractionDisabled.value = false
   }, 500)
 })
+
+//選配總覽
+const allChooseImageMap = {
+  磚地_Sa_馬桶: 'overview_1.png',
+  木地_Sa_馬桶: 'overview_2.png',
+  磚地_Bo_馬桶: 'overview_3.png',
+  木地_Bo_馬桶: 'overview_4.png',
+  磚地_Sa_自動馬桶: 'overview_5.png',
+  磚地_Bo_自動馬桶: 'overview_6.png',
+  木地_Sa_自動馬桶: 'overview_7.png',
+  木地_Bo_自動馬桶: 'overview_8.png'
+}
+const allChooseImage = computed(() => {
+  const key = `${selectedOptions.value.floor}_${selectedOptions.value.kitchen}_${selectedOptions.value.bathroom}`
+  return window.assetPath
+    ? window.assetPath.getAssetPath('overview', allChooseImageMap[key])
+    : `/overview/${allChooseImageMap[key]}`
+})
 </script>
 
 <style lang="sass" scoped>
@@ -341,29 +379,26 @@ video
   width: auto
   height: 100%
   object-fit: cover
-  z-index: 999 // 確保在最上層
+  z-index: 999
   transition: opacity 1s ease-out
 
-// 當 `isVideoPlaying` 為 false 時，影片淡出
+
 video.fadeOut
   opacity: 0
-  pointer-events: none // 讓 `video` 不會擋住下方內容
+  pointer-events: none
 
 .main-content
   opacity: 0
   transition: opacity 1s ease-in
-  animation: fadeIn 1s ease-in forwards  // 讓首頁淡入
+  animation: fadeIn 1s ease-in forwards
   width: 1920px
-  // height: calc(1080px - 60px) // 減去 nav 的高度
-  // margin: 60px auto 0
-
   display: flex
 @keyframes fadeIn
   from
     opacity: 0
   to
     opacity: 1
-// 圖片淡入淡出動畫
+
 .img__container
   opacity: 1
   transition: opacity 0.5s ease-in-out
@@ -380,34 +415,32 @@ video.fadeOut
   width: 1920px
   height: 1080px
   display: flex
-  nav
-    width: 300px
-    height: 100%
-    background: linear-gradient(0deg, #B9A670 20%, #D9CAAA 100%)
-    display: flex
-    justify-content: center
-    align-items: center
-    ul
-      margin: auto
-      list-style-type: none
+  overflow: hidden
+  .navbar__container
+    display: inline-block
+    max-width: 100%
+    img
       width: 100%
-      padding: 0
-      display: flex
-      flex-direction: column
-      margin: auto
-      color: white
-      li
-        padding: 15px
-        margin: auto
-        cursor: pointer
-        font-size: 24px
-        color: #ccc
-        &:hover
-          color: #7B6D4A
-          transition: color 0.3s
-        &.focus
-          color: #7B6D4A
-          transition: color 0.3s
+      height: 100%
+    .nav__item
+      position: absolute
+      width: 105px
+      height: 32px
+      border: 1px solid red
+      cursor: pointer
+    .nav__item1
+      top: 424px
+      left: 45px
+    .nav__item2
+      top: 485px
+      left: 45px
+    .nav__item3
+      top: 550px
+      left: 45px
+    .nav__item4
+      top: 612px
+      left: 45px
+
 .text-container
   position: relative
   display: flex
@@ -428,15 +461,12 @@ video.fadeOut
 .focus
   color: #7B6D4A
 .currentimage__container
-  width: 100%
+  width: calc( 100% -  200px )
   height: 100%
-  // margin: auto
   display: flex
-
   position: relative
-
   img
-    width: 100%
+    width: auto
     height: 100%
     object-fit: cover
 .select__scene
@@ -477,7 +507,6 @@ video.fadeOut
     height: 355px
     top: 32%
     left: 25%
-    // background-color: rgba(0, 0, 0, 0.5)
     cursor: pointer
     transition: background-color 0.3s
 
@@ -512,7 +541,6 @@ video.fadeOut
   cursor: pointer
   line-height: 30px
   font-size: 24px
-  // border: 1px solid white
   background-color: rgba(0, 0, 0, 0.3)
   z-index: 1
 .vr__container
@@ -522,8 +550,8 @@ video.fadeOut
   width: 100%
   height: 100%
   cursor: pointer
-  opacity: 1 // 添加初始透明度
-  transition: opacity 0.5s ease-in-out // 添加与img__container相同的过渡
+  opacity: 1
+  transition: opacity 0.5s ease-in-out
 .desc__img
   position: absolute
   top: 0
@@ -548,9 +576,14 @@ video.fadeOut
   top: 0
   left: 0
   width: auto
+  width: 100%
+  height: 100vh
+  overflow: hidden
   img
-    height: 100vh
-    object-position: right
+    width: 100%
+    height: 100%
+    object-position: right center
+    object-fit: cover
 
 .desc__close
   position: absolute
@@ -567,4 +600,35 @@ video.fadeOut
   img
     width: 100%
     height: 100%
+
+.option__image
+  width: 200px
+  height: auto
+  position: absolute
+  width: 365px
+  height: 365px
+  top: 303px
+  left: 440px
+  img
+    width: 100%
+    height: 100%
+    object-fit: cover
+    object-position: center
+  &.pos_1
+    top: 303px
+    left: 440px
+  &.pos_2
+    top: 303px
+    left: 928px
+.allchoose__container
+  position: absolute
+  top: 0
+  left: 0
+  width: 100%
+  height: 100%
+  overflow: auto
+  z-index: 3
+  img
+    width: 100%
+    height: auto
 </style>
