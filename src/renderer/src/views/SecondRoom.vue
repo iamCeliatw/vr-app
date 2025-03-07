@@ -30,6 +30,8 @@
             img.default(src="/stand_icon.png" alt="stand point2")
             .point_active.point_active2
               img.active(src="/stand_icon_active.png" alt="active icon" :style="{opacity: selectedScene === '餐廳'|| hoveredScene === '餐廳' ? 1 : 0}")
+        .video__container(v-if="openVideo")
+          video(src="/tworoom.mp4" autoplay playsinline controls @ended="handleVideoEnd" :class="{ fadeOut: !isVideoPlaying }")
 
 
 //客變內容系統
@@ -124,6 +126,9 @@ const changeSideBar = (id) => {
   showMaterialSystem.value = false
   if (id === '001') {
     openFloorPlan.value = true
+  }
+  if (id === '004') {
+    openVideo.value = true
   }
 }
 
@@ -429,16 +434,6 @@ const allChooseImage = computed(() => {
 </script>
 
 <style lang="sass" scoped>
-video
-  position: fixed
-  top: 0
-  left: 0
-  width: auto
-  height: 100%
-  object-fit: cover
-  z-index: 999
-  transition: opacity 1s ease-out
-
 
 video.fadeOut
   opacity: 0
@@ -726,4 +721,21 @@ video.fadeOut
     width: 100%
     height: auto
     display: block
+
+.video__container
+  width: 100%
+  height: 100%
+  position: absolute
+  top: 0
+  left: 0
+  z-index: 1
+  video
+    width: 100%
+    height: 100%
+    // object-fit: cover
+    // object-position: center
+    z-index: 1
+    transition: opacity 1s ease-out
+    opacity: 1
+    pointer-events: none
 </style>

@@ -4,4 +4,5 @@ out
 .DS_Store
 .eslintcache
 *.log*
-src/renderer/public/video.mp4
+src/renderer/public/tworoom.mp4
+src/renderer/public/oneroom/oneroom.mp4
