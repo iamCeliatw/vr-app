@@ -44,7 +44,7 @@ div.container
             .point_active.point_active3
              img.active(src="/stand_icon_active.png" alt="active icon" :style="{opacity: selectedScene === '臥室' || hoveredScene === '臥室' ? 1 : 0}")
         .video__container(v-if="openVideo")
-          video(src="/intro.mp4" autoplay playsinline controls @ended="handleVideoEnd" :class="{ fadeOut: !isVideoPlaying }")
+          video(src="/oneroom/oneroom.mp4" autoplay playsinline controls @ended="handleVideoEnd" :class="{ fadeOut: !isVideoPlaying }")
 
 </template>
 <script setup>
