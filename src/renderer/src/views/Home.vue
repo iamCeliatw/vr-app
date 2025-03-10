@@ -1,15 +1,16 @@
 <template lang="pug">
 div.container
-  //- video.intro__video(
-  //-     ref="introVideo"
-  //-     src="/intro.mp4"
-  //-     autoplay
-  //-     playsinline
-  //-     @ended="handleVideoEnd"
-  //-     :class="{ fadeOut: !isVideoPlaying }"
-  //-   )
-  //- div.main-content(v-if="!isVideoPlaying")
-  div.main-content
+  video.intro__video(
+      ref="introVideo"
+      src="/intro.mp4"
+      autoplay
+      playsinline
+      @ended="handleVideoEnd"
+      :class="{ fadeOut: !isVideoPlaying }"
+      v-if="isVideoPlaying"
+    )
+  //- div.main-content
+  div.main-content(v-if="!isVideoPlaying")
     div.navbar__container
       img(:src="sidebarImage" alt="navbar")
       .nav__item1.nav__item(@click="chooseMaterial('001')")
@@ -403,9 +404,9 @@ const allChooseImage = computed(() => {
   transition: opacity 1s ease-out
 
 
-video.fadeOut
-  opacity: 0
-  // pointer-events: none
+  video.fadeOut
+    opacity: 0
+    pointer-events: none
 
 .main-content
   // opacity: 0
