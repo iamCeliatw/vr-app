@@ -23,7 +23,8 @@ div.container
           img(:src="currentImage" alt="current image" @load="handleImageLoad")
         .select__scene(@click="changeScene" :disabled="isInteractionDisabled")  
           img(:src="currentSceneImage" alt="switch")
-        .vr__mode(@click="toggleVRMode" :disabled="isInteractionDisabled") {{isVRMode ? '3D' : 'VR'}}
+        .vr__mode(v-show="!openVideo" @click="toggleVRMode" :disabled="isInteractionDisabled")
+          img(:src="vrImage" alt="vr icon")
         .vr__container(v-show="showVRViewer" :class="{ fadeOut: isVRFading && !isVRMode, fadeIn: isVRFading && isVRMode }")
           VRViewer(:image="currentImage")
 
@@ -61,6 +62,10 @@ const hoveredScene = ref(null)
 const sidebarImageId = ref('000')
 const isAllChooseMode = ref(false)
 const openVideo = ref(false)
+const vrImage = computed(() => {
+  const isVR = isVRMode.value ? '_active' : ''
+  return window.assetPath ? window.assetPath.getAssetPath('', `vr${isVR}.png`) : `/vr${isVR}.png`
+})
 const sidebarImage = computed(() => {
   return window.assetPath
     ? window.assetPath.getAssetPath('sidebar', `one_${sidebarImageId.value}.png`)
@@ -95,6 +100,8 @@ const openDescription = () => {
 
 const chooseMaterial = (id) => {
   sidebarImageId.value = id
+  openVideo.value = false
+  openFloorPlan.value = false
   if (id === '001') {
     openVideo.value = false
     openFloorPlan.value = true
@@ -398,7 +405,7 @@ const allChooseImage = computed(() => {
 
 video.fadeOut
   opacity: 0
-  pointer-events: none
+  // pointer-events: none
 
 .main-content
   // opacity: 0
@@ -439,7 +446,7 @@ video.fadeOut
       position: absolute
       width: 105px
       height: 32px
-      border: 1px solid red
+      // border: 1px solid red
       cursor: pointer
     .nav__item1
       top: 485px
@@ -585,15 +592,15 @@ video.fadeOut
   top: 10%
   right: 10%
   transform: translate(50%, -50%)
-  width: 80px
-  height: 30px
+  // width: 80px
+  // height: 30px
   border-radius: 5px
   color: #fff
   text-align: center
   cursor: pointer
   line-height: 30px
   font-size: 24px
-  background-color: rgba(0, 0, 0, 0.3)
+  // background-color: rgba(0, 0, 0, 0.3)
   z-index: 1
 .vr__container
   position: absolute
@@ -699,5 +706,5 @@ video.fadeOut
     z-index: 1
     transition: opacity 1s ease-out
     opacity: 1
-    pointer-events: none
+    // pointer-events: none
 </style>

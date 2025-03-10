@@ -59,7 +59,7 @@ video.fadeOut
       position: absolute
       width: 105px
       height: 32px
-      border: 1px solid red
+      // border: 1px solid red
       cursor: pointer
     .nav__item1
       top: 424px

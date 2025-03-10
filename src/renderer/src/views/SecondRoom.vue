@@ -1,5 +1,5 @@
 <template lang="pug">
-.container(v-if="!showMaterialSystem")
+.container(v-show="!showMaterialSystem")
   div.main-content
     div.navbar__container
       img(:src="twoRoomSidebarImage" alt="navbar")
@@ -12,11 +12,12 @@
       .bg__container 
         img(src="/bg.png" alt="background")
       .scene__container
-        .img__container(v-show="!isVRMode" :class="{ fadeOut: isFading, fadeIn: !isFading }")
+        .img__container(v-show="!isVRMode && !openVideo" :class="{ fadeOut: isFading, fadeIn: !isFading }")
           img(:src="currentImage" alt="current image" @load="handleImageLoad")
-        .select__scene(@click="changeScene" :disabled="isInteractionDisabled")  
+        .select__scene(@click="changeScene" :disabled="isInteractionDisabled" v-show="!openVideo")  
           img(:src="currentSceneImage" alt="switch")
-        .vr__mode(@click="toggleVRMode" :disabled="isInteractionDisabled") {{isVRMode ? '3D' : 'VR'}}
+        .vr__mode(v-show="!openVideo" @click="toggleVRMode" :disabled="isInteractionDisabled")
+          img(:src="vrImage" alt="vr icon")
         .vr__container(v-show="showVRViewer" :class="{ fadeOut: isVRFading && !isVRMode, fadeIn: isVRFading && isVRMode }")
           VRViewer(:image="currentImage")
         //  平面格局圖 
@@ -32,10 +33,15 @@
               img.active(src="/stand_icon_active.png" alt="active icon" :style="{opacity: selectedScene === '餐廳'|| hoveredScene === '餐廳' ? 1 : 0}")
         .video__container(v-if="openVideo")
           video(src="/tworoom.mp4" autoplay playsinline controls @ended="handleVideoEnd" :class="{ fadeOut: !isVideoPlaying }")
+      .furniture__container(v-show="openFurniture")
+        img(:src="currentFurnitureImage" alt="furniture")
+        .furniture__item1.furniture__item(@click="currentFurniture = '1'")
+        .furniture__item2.furniture__item(@click="currentFurniture = '2'")
+        .furniture__item3.furniture__item(@click="currentFurniture = '3'")
 
 
 //客變內容系統
-.container(v-if="showMaterialSystem")
+.container(v-show="showMaterialSystem")
   div.main-content
     div.navbar__container
       img(:src="sidebarImage" alt="navbar")
@@ -53,7 +59,8 @@
           img(:src="currentImage" alt="current image" @load="handleImageLoad")
         .select__scene(@click="changeScene" :disabled="isInteractionDisabled")  
           img(:src="currentSceneImage" alt="switch")
-        .vr__mode(@click="toggleVRMode" :disabled="isInteractionDisabled") {{isVRMode ? '3D' : 'VR'}}
+        .vr__mode(@click="toggleVRMode" :disabled="isInteractionDisabled") 
+          img(src="/vr.png" alt="vr icon")
         .vr__container(v-show="showVRViewer" :class="{ fadeOut: isVRFading && !isVRMode, fadeIn: isVRFading && isVRMode }")
           VRViewer(:image="currentImage")
 
@@ -82,11 +89,23 @@ import VRViewer from '../components/VRViewer.vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 console.log(window.getAssetPath)
+const vrImage = computed(() => {
+  const isVR = isVRMode.value ? '_active' : ''
+  return window.assetPath ? window.assetPath.getAssetPath('', `vr${isVR}.png`) : `/vr${isVR}.png`
+})
 const changeRoom = () => {
+  //初始化
+  openFloorPlan.value = false
+  openFurniture.value = false
+  openVideo.value = false
+
   router.push('/')
 }
 const backToRoom = () => {
   console.log('backToRoom')
+  openFloorPlan.value = false
+  openFurniture.value = false
+  openVideo.value = false
   showMaterialSystem.value = false
 }
 
@@ -99,6 +118,13 @@ const hoveredScene = ref(null)
 const openVideo = ref(false)
 const sidebarImageId = ref('000')
 const openFloorPlan = ref(false)
+const openFurniture = ref(false)
+const currentFurniture = ref('1')
+const currentFurnitureImage = computed(() => {
+  return window.assetPath
+    ? window.assetPath.getAssetPath('furniture', `${currentFurniture.value}.png`)
+    : `furniture/${currentFurniture.value}.png`
+})
 // one room sidebar
 const twoRoomSidebarImageId = ref('000')
 const isAllChooseMode = ref(false)
@@ -124,8 +150,14 @@ const floorChooseScene = (room) => {
 const changeSideBar = (id) => {
   twoRoomSidebarImageId.value = id
   showMaterialSystem.value = false
+  openVideo.value = false
+  openFurniture.value = false
+  openFloorPlan.value = false
   if (id === '001') {
     openFloorPlan.value = true
+  }
+  if (id === '003') {
+    openFurniture.value = true
   }
   if (id === '004') {
     openVideo.value = true
@@ -145,6 +177,7 @@ const openDescription = () => {
   isDescriptionOpen.value = true
 }
 const chooseMaterial = (id) => {
+  isAllChooseMode.value = false
   sidebarImageId.value = id
   currentMaterial.value = images.value.find((image) => image.id === id)
   console.log('ccc', currentMaterial.value)
@@ -478,7 +511,7 @@ video.fadeOut
       position: absolute
       width: 105px
       height: 32px
-      border: 1px solid red
+      // border: 1px solid red
       cursor: pointer
     .nav__item1
       top: 424px
@@ -622,15 +655,15 @@ video.fadeOut
   top: 10%
   right: 10%
   transform: translate(50%, -50%)
-  width: 80px
-  height: 30px
+  // width: 80px
+  // height: 30px
   border-radius: 5px
   color: #fff
   text-align: center
   cursor: pointer
   line-height: 30px
   font-size: 24px
-  background-color: rgba(0, 0, 0, 0.3)
+  // background-color: rgba(0, 0, 0, 0.3)
   z-index: 1
 .vr__container
   position: absolute
@@ -705,10 +738,10 @@ video.fadeOut
     object-position: center
   &.pos_1
     top: 303px
-    left: 440px
+    left: 438px
   &.pos_2
     top: 303px
-    left: 928px
+    left: 920px
 .allchoose__container
   position: absolute
   top: 0
@@ -722,20 +755,40 @@ video.fadeOut
     height: auto
     display: block
 
-.video__container
+.video__container,
+.furniture__container
   width: 100%
   height: 100%
   position: absolute
   top: 0
   left: 0
-  z-index: 1
+  z-index: 5
   video
     width: 100%
     height: 100%
-    // object-fit: cover
-    // object-position: center
     z-index: 1
     transition: opacity 1s ease-out
     opacity: 1
-    pointer-events: none
+    // pointer-events: none
+  img
+    width: 100%
+    height: 100%
+    object-fit: cover
+    object-position: center
+    z-index: 1
+  .furniture__item
+    position: absolute
+    left: 48px
+    bottom: 30px
+    width: 100%
+    height: 100%
+    width: 515px
+    height: 215px
+    border-radius: 20px
+    cursor: pointer
+    // border: 1px solid red
+  .furniture__item2
+    left: 600px
+  .furniture__item3
+    left: 1150px
 </style>
