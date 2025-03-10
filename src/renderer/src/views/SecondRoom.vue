@@ -18,7 +18,7 @@
           img(:src="currentSceneImage" alt="switch")
         .vr__mode(v-show="!openVideo" @click="toggleVRMode" :disabled="isInteractionDisabled")
           img(:src="vrImage" alt="vr icon")
-        .vr__container(v-show="showVRViewer" :class="{ fadeOut: isVRFading && !isVRMode, fadeIn: isVRFading && isVRMode }")
+        .vr__container(v-show="showVRViewer && !openVideo" :class="{ fadeOut: isVRFading && !isVRMode, fadeIn: isVRFading && isVRMode }")
           VRViewer(:image="currentImage")
         //  平面格局圖 
         .floor__container(v-show="openFloorPlan")
