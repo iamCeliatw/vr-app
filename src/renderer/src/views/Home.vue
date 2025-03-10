@@ -19,6 +19,7 @@ div.container
     .currentimage__container
       .bg__container 
         img(src="/bg.png" alt="background")
+        .close__app--icon(@click="closeApp")
       .scene__container
         .img__container(v-show="!isVRMode" :class="{ fadeOut: isFading, fadeIn: !isFading }")
           img(:src="currentImage" alt="current image" @load="handleImageLoad")
@@ -67,6 +68,11 @@ const vrImage = computed(() => {
   const isVR = isVRMode.value ? '_active' : ''
   return window.assetPath ? window.assetPath.getAssetPath('', `vr${isVR}.png`) : `/vr${isVR}.png`
 })
+const closeApp = () => {
+  //關閉APP
+  console.log('closeApp')
+  window.electron.ipcRenderer.send('close-app')
+}
 const sidebarImage = computed(() => {
   return window.assetPath
     ? window.assetPath.getAssetPath('sidebar', `one_${sidebarImageId.value}.png`)
@@ -656,6 +662,15 @@ onMounted(() => {
     height: 100%
     object-position: right center
     object-fit: cover
+  .close__app--icon
+    width: 50px
+    height: 40px
+    // border: 1px solid white
+    position: absolute
+    top: 5px
+    right: 5px
+    z-index: 100
+    cursor: pointer
 
 .desc__close
   position: absolute

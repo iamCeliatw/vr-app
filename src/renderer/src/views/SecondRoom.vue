@@ -11,6 +11,7 @@
     .currentimage__container
       .bg__container 
         img(src="/bg.png" alt="background")
+        .close__app--icon(@click="closeApp")
       .scene__container
         .img__container(v-show="!isVRMode && !openVideo" :class="{ fadeOut: isFading, fadeIn: !isFading }")
           img(:src="currentImage" alt="current image" @load="handleImageLoad")
@@ -34,7 +35,7 @@
         .video__container(v-if="openVideo")
           video(src="/tworoom.mp4" autoplay playsinline controls @ended="handleVideoEnd" :class="{ fadeOut: !isVideoPlaying }")
       .furniture__container(v-show="openFurniture")
-        img(:src="currentFurnitureImage" alt="furniture")
+        img(:src="currentFurnitureImage" alt="furniture" @load="handleImageLoad"  :class="{ fadeOut: isFading, fadeIn: !isFading }")
         .furniture__item1.furniture__item(@click="currentFurniture = '1'")
         .furniture__item2.furniture__item(@click="currentFurniture = '2'")
         .furniture__item3.furniture__item(@click="currentFurniture = '3'")
@@ -108,7 +109,11 @@ const backToRoom = () => {
   openVideo.value = false
   showMaterialSystem.value = false
 }
-
+const closeApp = () => {
+  //關閉APP
+  console.log('closeApp')
+  window.electron.ipcRenderer.send('close-app')
+}
 const showMaterialSystem = ref(false)
 // **狀態：影片是否還在播放**
 const isVideoPlaying = ref(true)
@@ -403,7 +408,12 @@ watch(currentImage, () => {
 
   setTimeout(() => {}, 500)
 })
+watch(currentFurnitureImage, () => {
+  isInteractionDisabled.value = true
+  isFading.value = true
 
+  setTimeout(() => {}, 500)
+})
 const handleImageLoad = () => {
   // Add a small delay before starting the fade in
   setTimeout(() => {
@@ -706,6 +716,15 @@ video.fadeOut
     height: 100%
     object-position: right center
     object-fit: cover
+  .close__app--icon
+    width: 50px
+    height: 40px
+    // border: 1px solid white
+    position: absolute
+    top: 5px
+    right: 5px
+    z-index: 100
+    cursor: pointer
 
 .desc__close
   position: absolute

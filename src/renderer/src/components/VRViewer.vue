@@ -236,7 +236,7 @@ function onMouseMove(event) {
   // 調低靈敏度 (原本是 0.2，可改成 0.1 或更低)
   const sensitivity = 0.1
   velocityX = deltaX * sensitivity
-  velocityY = deltaY * sensitivity
+  velocityY = -deltaY * sensitivity
 
   lon -= velocityX
   lat -= velocityY
