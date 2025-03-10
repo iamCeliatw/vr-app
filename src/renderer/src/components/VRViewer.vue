@@ -233,14 +233,13 @@ function onMouseMove(event) {
   const deltaX = event.clientX - lastX
   const deltaY = event.clientY - lastY
 
-  velocityX = deltaX * 0.2
-  velocityY = deltaY * 0.2
+  // 調低靈敏度 (原本是 0.2，可改成 0.1 或更低)
+  const sensitivity = 0.1
+  velocityX = deltaX * sensitivity
+  velocityY = deltaY * sensitivity
 
   lon -= velocityX
   lat -= velocityY
-
-  // 為了防止過度翻轉，限制上下視角範圍
-  // 例如 -85 ~ 85
   lat = Math.max(-85, Math.min(85, lat))
 
   lastX = event.clientX

@@ -585,8 +585,8 @@ video.fadeOut
     width: 200px
     height: 50px
     cursor: pointer
-    top: 71%
-    left: 44%
+    top: 720px
+    left: 760px
   .stand_point
     position: absolute
     width: 30px
@@ -680,7 +680,7 @@ video.fadeOut
   left: 0
   z-index: 3
   width: 100%
-  height: 100%
+  height: 103%
   img
     width: 100%
     height: 100%
