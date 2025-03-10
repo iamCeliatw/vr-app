@@ -50,7 +50,7 @@ div.container
 
 </template>
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import VRViewer from '../components/VRViewer.vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
@@ -78,8 +78,11 @@ const floorChooseScene = (room) => {
   sidebarImageId.value = '000'
 }
 // **影片播放完畢，淡出並顯示首頁**
-const handleVideoEnd = () => {
+function handleVideoEnd() {
+  // 影片播放結束
   isVideoPlaying.value = false
+  // 只在本 session 生效，下次重新開啟應用就失效
+  sessionStorage.setItem('introPlayed', 'true')
 }
 const changeRoom = () => {
   console.log('changeRoom')
@@ -389,6 +392,15 @@ const allChooseImage = computed(() => {
   return window.assetPath
     ? window.assetPath.getAssetPath('overview', allChooseImageMap[key])
     : `/overview/${allChooseImageMap[key]}`
+})
+
+onMounted(() => {
+  // 檢查 sessionStorage，以判斷本次應用程式執行是否已播過
+  const hasPlayed = sessionStorage.getItem('introPlayed') === 'true'
+  if (hasPlayed) {
+    // 已經播過 → 不再播
+    isVideoPlaying.value = false
+  }
 })
 </script>
 
