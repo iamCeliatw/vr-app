@@ -177,6 +177,7 @@ function updateTexture(imageUrl) {
   }
   console.log('imageurl', imageUrl)
   lon = props.image.includes('dining') ? -360 : 180
+  lat = 0
   // 根據是否打包來確保正確的路徑
   const newImageUrl = window.assetPath
     ? window.assetPath.getAssetPath(getFolderName(imageUrl), getFileName(imageUrl))
