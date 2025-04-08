@@ -12,11 +12,10 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'dist', // 指定輸出目錄
+    outDir: 'dist',
     rollupOptions: {
-      external: ['electron'], // 不打包 Electron
       output: {
-        format: 'cjs' // 使用 CommonJS 格式
+        format: 'es'
       }
     }
   }
