@@ -1,4 +1,9 @@
-import { createRouter, createWebHashHistory, onBeforeRouteLeave } from 'vue-router'
+import {
+  createRouter,
+  createWebHashHistory,
+  createWebHistory,
+  onBeforeRouteLeave
+} from 'vue-router'
 const routes = [
   { path: '/', name: 'Home', component: () => import('@renderer/views/Home.vue') },
   {
@@ -9,6 +14,7 @@ const routes = [
 ]
 
 const router = createRouter({
+  // history: createWebHistory(),
   history: createWebHashHistory(),
   routes
 })
